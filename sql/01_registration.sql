@@ -1,15 +1,15 @@
 -- 01_registration.sql
--- 자동차 신규등록 현황 영역 / 담당: 등록 현황 파트 (강유나)
+-- 자동차 신규등록 현황 영역
 -- 출처: 공공데이터포털 OPEN API
 --       한국교통안전공단_자동차종합정보 신규등록정보 서비스
 --       GET https://apis.data.go.kr/B553881/newRegistlnfoService_02/getnewRegistlnfoService02
 -- 조회 필터: 연월, 시도, 성별, 연령대
--- ※ "신규" 등록 대수예요. 그 달에 새로 등록된 차만 세요. (전체 보유 대수 아님)
+-- ※ "신규" 등록 대수, 그 달에 새로 등록된 차만. (전체 보유 대수 아님)
 
 USE car_faq;
 
 -- ※ 이전 기획(통계누리 차종별) SQL을 이미 실행한 사람은
---    99_migrate_20260922.sql 을 먼저 한 번 실행한 뒤 이 파일을 실행하세요.
+--    99_migrate_20260922.sql 을 먼저 한 번 실행한 뒤 이 파일을 실행
 
 -- 시도
 -- region_name : 화면에 보여 줄 이름 (예: 서울)
@@ -53,21 +53,21 @@ CREATE TABLE IF NOT EXISTS new_registration_stat (
 );
 
 -- API 응답을 저장하는 규칙
--- 1) 요청 1번 = 숫자 1개. 응답 <body><dtaCo>숫자</dtaCo></body> 의 dtaCo가 reg_count예요.
--- 2) 연월 × 시도 × 성별 × 연령대 조합마다 반복 호출해요.
+-- 1) 요청 1번 = 숫자 1개. 응답 <body><dtaCo>숫자</dtaCo></body> 의 dtaCo가 reg_count.
+-- 2) 연월 × 시도 × 성별 × 연령대 조합마다 반복 호출
 --    요청 변수: serviceKey, registYy(YYYY), registMt(MM, 두 자리), registGrcCode, sexdstn, agrde
--- 3) 코드 값은 region, gender, age_group 테이블의 api_code에서 꺼내 써요.
--- 4) 응답 형식은 XML이에요. (요청에 _type=json 을 붙여 JSON이 오는지 먼저 확인해 보기)
--- 5) 다시 받으면 새 값으로 덮어써요.
+-- 3) 코드 값은 region, gender, age_group 테이블의 api_code에서 꺼내 사용
+-- 4) 응답 형식은 XML. (요청에 _type=json 을 붙여 JSON이 오는지 먼저 확인해 보기)
+-- 5) 다시 받으면 새 값으로 덮어씌움.
 --    INSERT INTO new_registration_stat (stat_ym, region_id, gender_id, age_id, reg_count)
 --    VALUES (%s, %s, %s, %s, %s)
 --    ON DUPLICATE KEY UPDATE reg_count = VALUES(reg_count);
--- 6) 개발 계정은 하루 3,000번까지 호출 가능해요. 12개월 = 3,264번이라 이틀에 나눠 받아요.
+-- 6) 개발 계정은 하루 3,000번까지 호출 가능, 12개월 = 3,264번이라 이틀에 나눠 받음
 
 -- 시도 수집이 불가능하다고 결정되면 (예비안)
--- region 테이블과 region_id 컬럼을 빼고, UNIQUE (stat_ym, gender_id, age_id) 로 바꿔요.
+-- region 테이블과 region_id 컬럼을 빼고, UNIQUE (stat_ym, gender_id, age_id) 로 바꾸기
 
--- 화면 필터가 SQL 조건이 되는 예시 (Streamlit에서는 값을 %s로 넘겨요)
+-- 화면 필터가 SQL 조건이 되는 예시 (Streamlit에서는 값을 %s로 넘김)
 
 -- 부산, 20대, 여성, 2025년 9월 ~ 2026년 8월
 -- SELECT s.stat_ym, r.region_name, g.gender_name, a.age_name, s.reg_count
@@ -81,7 +81,7 @@ CREATE TABLE IF NOT EXISTS new_registration_stat (
 --   AND a.age_name    = '20대'
 -- ORDER BY s.stat_ym DESC;
 
--- 시도, 성별, 연령대 '전체' 선택 시: 그 조건만 빼요 → 해당 행을 모두 표시 (합산 안 함)
+-- 시도, 성별, 연령대 '전체' 선택 시: 그 조건만 빼기 → 해당 행을 모두 표시 (합산 안 함)
 -- SELECT s.stat_ym, r.region_name, g.gender_name, a.age_name, s.reg_count
 -- FROM new_registration_stat s
 -- JOIN region r    ON s.region_id = r.region_id
