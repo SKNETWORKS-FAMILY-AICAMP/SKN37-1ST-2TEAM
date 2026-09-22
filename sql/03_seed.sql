@@ -1,37 +1,57 @@
 -- 03_seed.sql
--- 기준 데이터. 모두가 같은 값으로 시작하도록 함께 실행하세요.
--- INSERT IGNORE라서 여러 번 실행해도 중복이 들어가지 않아요.
+-- 기준 데이터. 모두가 같은 값으로 시작하도록 함께 실행
+-- 여러 번 실행해도 중복이 들어가지 않음
+-- (신규등록 기준 데이터는 이미 있으면 api_code만 새 값으로 수정)
 
 USE car_faq;
+-- api_code = 공공데이터포털 신규등록정보 API 요청 변수에 넣는 값 (기술문서 코드표 기준)
 
--- ─────────────────────────────────────────────
--- 자동차 신규등록 현황 (담당: 강유나)
--- ─────────────────────────────────────────────
--- api_code는 기술문서 코드표를 확인한 뒤 등록 현황 파트가 채워서 다시 공유해요.
--- 채우기 전까지는 NULL이에요. (화면 개발은 이름만 있으면 먼저 할 수 있어요)
-
--- 시도 17개 (코드표의 시도 구성이 다르면 코드표 기준으로 맞춰요)
-INSERT IGNORE INTO region (region_name) VALUES
-  ('서울'), ('부산'), ('대구'), ('인천'), ('광주'), ('대전'), ('울산'), ('세종'),
-  ('경기'), ('강원'), ('충북'), ('충남'), ('전북'), ('전남'), ('경북'), ('경남'), ('제주');
+-- 시도 17개 (api_code = 요청 변수 registGrcCode 값)
+INSERT INTO region (region_name, api_code) VALUES
+  ('서울', '1'),
+  ('부산', '2'),
+  ('대구', '3'),
+  ('인천', '4'),
+  ('광주', '5'),
+  ('대전', '6'),
+  ('울산', '7'),
+  ('세종', '8'),
+  ('경기', '9'),
+  ('강원', '10'),
+  ('충북', '11'),
+  ('충남', '12'),
+  ('전북', '13'),
+  ('전남', '14'),
+  ('경북', '15'),
+  ('경남', '16'),
+  ('제주', '17')
+ON DUPLICATE KEY UPDATE api_code = VALUES(api_code);
 
 -- 성별
-INSERT IGNORE INTO gender (gender_name) VALUES
-  ('남성'), ('여성');
+INSERT INTO gender (gender_name, api_code) VALUES
+  ('남성', '남자'), 
+  ('여성', '여자')
+ON DUPLICATE KEY UPDATE api_code = VALUES(api_code);
 
 -- 연령대 (API 기준 10대 ~ 80대)
-INSERT IGNORE INTO age_group (age_name) VALUES
-  ('10대'), ('20대'), ('30대'), ('40대'), ('50대'), ('60대'), ('70대'), ('80대');
+INSERT INTO age_group (age_name, api_code) VALUES
+  ('10대', '1'), 
+  ('20대', '2'), 
+  ('30대', '3'), 
+  ('40대', '4'), 
+  ('50대', '5'), 
+  ('60대', '6'), 
+  ('70대', '7'), 
+  ('80대', '8')
+ON DUPLICATE KEY UPDATE api_code = VALUES(api_code);  
 
--- 코드표 확인 후 이렇게 채워요 (값은 예시가 아니라 빈칸이에요)
+-- 코드표 확인 후 이렇게 채우기 (값은 예시가 아니라 빈칸)
 -- UPDATE region    SET api_code = '__' WHERE region_name = '서울';
 -- UPDATE gender    SET api_code = '__' WHERE gender_name = '남성';
 -- UPDATE age_group SET api_code = '__' WHERE age_name    = '20대';
 
--- ─────────────────────────────────────────────
--- 기업 FAQ (담당: 박세윤, 오원아)
--- ─────────────────────────────────────────────
--- 기업: 시간이 남으면 기업을 더 추가해요. 한 줄만 추가하면 돼요. 예: ('제네시스')
+
+-- 기업: 시간이 남으면 기업을 더 추가, 한 줄만 추가하면 됨. 예: ('제네시스')
 INSERT IGNORE INTO company (company_name) VALUES
   ('기아'), ('현대');
 
@@ -43,6 +63,6 @@ INSERT IGNORE INTO company (company_name) VALUES
 --   멤버스     ← 기아 '기아멤버스'  / 현대 '블루멤버스'
 --   Pleos 계정 ← 기아 'Pleos 계정' / 현대 'Pleos 계정'
 --   수집 안 함: 기아 TOP 10, PBV, Kia App, 기타 / 현대 블루링크, 시승, 빌트인캠, 현대 디지털 키, 기타
--- 기업을 추가하면 그 기업의 탭도 이 5개 중 하나로 맞춰요. 안 맞는 탭은 수집하지 않아요.
+-- 기업을 추가하면 그 기업의 탭도 이 5개 중 하나로 맞추기, 안 맞는 탭은 수집하지 않음
 INSERT IGNORE INTO faq_category (category_name) VALUES
   ('차량구매'), ('차량정비'), ('홈페이지'), ('멤버스'), ('Pleos 계정');
