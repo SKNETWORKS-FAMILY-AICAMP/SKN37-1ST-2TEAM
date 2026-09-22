@@ -27,7 +27,7 @@ def fetch_df(sql, params=None):
         cursor = connection.cursor()
         cursor.execute(sql, params)
 
-        # 결과 행 모두 가져오기
+        # 결과 행 모두 가져오기99_migrate → 01_registration → 03_seed 순서로 실행
         rows = cursor.fetchall()
 
         # 컬럼 이름만 모으기
