@@ -1,5 +1,6 @@
 import streamlit as st
 from styles import card_image, hero, inject_style
+from styles import card_image, hero, inject_style, sidebar_footer
 
 st.set_page_config(
     page_title="전국 자동차 신규등록 현황 및 기업 FAQ 조회",
@@ -48,9 +49,11 @@ def home():
 
 # 1 사이드바 메뉴 (메뉴 이름 = 파일 이름 · 현재 페이지 자동 강조)
 nav = st.navigation([
-    st.Page(home, title="홈", default=True),
-    st.Page(REG_PAGE, title="자동차 등록 현황"),
-    st.Page(FAQ_PAGE, title="기업 FAQ 조회"),
+    st.Page(home, title="홈", icon=":material/home:", default=True),
+    st.Page(REG_PAGE, title="자동차 등록 현황", icon=":material/directions_car:"),
+    st.Page(FAQ_PAGE, title="기업 FAQ 조회", icon=":material/apartment:"),
 ])
-nav.run()
 
+st.logo("assets/logo.png", size="large")
+nav.run()
+sidebar_footer() 

@@ -15,12 +15,11 @@ from pathlib import Path
 import streamlit as st
  
 # 색 팔레트 정의 / config.toml 과 동일 값 유지
-INK = "#1B2A41"         # 기본 글자
-MUTED = "#61728C"       # 흐린 글자
-LINE = "#DCE7F8"        # 테두리 (연한 하늘색)
-BRAND = "#3B72F0"       # 강조 파랑
-BRAND_DEEP = "#1E3A8A"  # 진한 파랑 (배너 겹침 층에 사용)
-SIDEBAR = "#F7FAFF"     # 사이드바 배경 (거의 흰색 + 푸른 기운)
+INK = "#16232E"         # 기본 글자
+MUTED = "#5B6B85"       # 흐린 글자
+LINE = "#DDE5F2"        # 테두리
+BRAND = "#2563EB"       # 강조 파랑
+BRAND_DEEP = "#1E3A8A"  # 진한 파랑 (그라데이션 시작)
  
  
 def inject_style():
@@ -31,20 +30,38 @@ def inject_style():
         /* 메인 영역 배경 생성 / 위쪽에 옅은 푸른 기운 추가 */
         .stApp {{
             background:
-                radial-gradient(1100px 300px at 18% -12%, #E4EEFF 0%, rgba(228,238,255,0) 72%),
-                #F2F7FF;
+                radial-gradient(1200px 320px at 20% -10%, #E3EDFC 0%, rgba(227,237,252,0) 70%),
+                #F4F7FD;
         }}
  
         /* 사이드바 배경 지정 / 오른쪽 경계선 추가 */
         section[data-testid="stSidebar"] {{
-            background: {SIDEBAR};
+            background: #FFFFFF;
             border-right: 1px solid {LINE};
         }}
  
-        /* 사이드바 메뉴 선택 항목 강조 / 연한 파랑 배경 */
-        section[data-testid="stSidebar"] a[aria-current="page"] {{
-            background: #E4EDFF;
-            border-radius: 8px;
+        /* 사이드바 이미지 모서리 둥글게 처리 */
+        section[data-testid="stSidebar"] img {{
+            border-radius: 12px;
+        }}
+ 
+        /* 사이드바 내용을 세로 배치로 변경 / 마지막 묶음을 아래로 밀기 위함 */
+        section[data-testid="stSidebar"] div[data-testid="stSidebarUserContent"] {{
+            display: flex;
+            flex-direction: column;
+            min-height: calc(100vh - 7rem);
+        }}
+
+        /* 사이드바 마지막 묶음(하단 영역)을 맨 아래로 밀기 */
+        section[data-testid="stSidebar"] div[data-testid="stSidebarUserContent"] > div:last-child {{
+            margin-top: auto;
+        }}
+
+        /* 사이드바 하단 구분선 생성 / 위쪽에 여백 확보 */
+        .sidebar-foot {{
+            border-top: 1px solid {LINE};
+            margin-top: 28px;
+            padding-top: 4px;
         }}
  
         /* 제목 자간 조정 */
@@ -114,7 +131,7 @@ def inject_style():
             content: "";
             position: absolute;
             inset: 0;
-            background: linear-gradient(90deg, rgba(23,44,92,.82) 0%, rgba(43,86,190,.62) 48%, rgba(80,140,240,.10) 100%);
+            background: linear-gradient(90deg, rgba(15,27,58,.88) 0%, rgba(30,58,138,.72) 45%, rgba(30,58,138,.15) 100%);
         }}
  
         .hero-inner {{
@@ -209,3 +226,19 @@ def card_image(image_path: str, width: int = 230):
     left, mid, right = st.columns([1, 3, 1])
     with mid:
         st.image(image_path, width=width)
+ 
+ 
+ 
+def sidebar_footer(text: str = "자동차 현황 확인하기",
+                   image_path: str = "assets/sidebar_illust.png"):
+    """사이드바 맨 아래 일러스트와 문구 출력 / nav.run() 뒤에서 호출
+    - 요소들을 container 하나로 묶어야 CSS가 통째로 아래로 밀 수 있음
+    """
+    with st.sidebar:
+        with st.container():
+            st.markdown('<div class="sidebar-foot"></div>', unsafe_allow_html=True)
+            try:
+                st.image(image_path, use_container_width=True)
+            except Exception:
+                pass                  # 이미지가 없어도 문구는 표시
+            st.caption(text)
