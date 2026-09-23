@@ -1,0 +1,15 @@
+# .streamlit/config.toml
+# 앱 전체 색감 설정 / 두 페이지 자동 적용
+# 위치: 프로젝트 최상위 폴더 안 .streamlit 폴더
+# 주의: 수정 후 streamlit 재시작 필요
+
+[theme]
+base = "light"                       # 밝은 테마 기준 지정
+primaryColor = "#2563EB"             # 강조색 지정 (버튼, 선택 메뉴, 링크)
+backgroundColor = "#F4F7FD"          # 메인 영역 배경색 지정 (연한 푸른 회색)
+secondaryBackgroundColor = "#FFFFFF" # 사이드바, 카드, 표 배경색 지정
+textColor = "#16232E"                # 기본 글자색 지정
+font = "sans serif"                  # 기본 글꼴 지정
+
+[server]
+runOnSave = true                     # 파일 저장 시 화면 자동 새로고침
