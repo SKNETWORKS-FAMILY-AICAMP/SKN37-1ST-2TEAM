@@ -1,4 +1,3 @@
-# collectors/crawl_kia.py
 
 import time
 
