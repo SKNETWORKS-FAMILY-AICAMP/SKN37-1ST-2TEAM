@@ -12,7 +12,6 @@
 import streamlit as st
 
 from db.faq import get_categories, get_companies, search_faq
-from styles import inject_style, page_banner
 
 ALL = "전체"
 PAGE_SIZE = 20
@@ -133,12 +132,7 @@ with st.sidebar:
 # ──────────────────────────────────────────────
 # 메인 (요소 3~7)
 # ──────────────────────────────────────────────
-inject_style()      # 공통 스타일 주입
-page_banner(        # 3 상단 배너
-    "기업 FAQ 조회",
-    "기아 · 현대 고객센터의 자주 묻는 질문을 한 번에 검색합니다.",
-    "assets/banner_faq.png",
-)
+st.title("기업 FAQ 조회")  # 3
 
 # 4 키워드 검색창 · 엔터 → 재실행(검색) · 앞뒤 공백 제거
 keyword_raw = st.text_input(
