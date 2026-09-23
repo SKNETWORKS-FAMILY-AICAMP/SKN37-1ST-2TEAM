@@ -14,6 +14,8 @@
 import pandas as pd
 import streamlit as st
 
+from styles import inject_style, page_banner
+
 from db.registration import (
     get_age_groups,
     get_available_yms,
@@ -124,7 +126,12 @@ with st.sidebar:
 if "newreg_query" not in st.session_state:
     st.session_state.newreg_query = (default_start, default_end, ALL, ALL, ALL)
 
-st.title("자동차 신규등록 현황")  # 7
+inject_style()      # 공통 스타일 주입
+page_banner(        # 7 상단 배너
+    "자동차 신규등록 현황",
+    "연월 · 시도 · 성별 · 연령대별로 새 차 등록 현황을 조회합니다.",
+    "assets/banner_registration.png",
+)
 
 if clicked:
     if start_ym > end_ym:
@@ -181,3 +188,11 @@ table.loc[len(table)] = ["합계", "", "", "", f"{total:,}"]
 
 st.subheader("상세 데이터")
 st.dataframe(table, hide_index=True, width="stretch", height=min(520, 38 * (len(table) + 1)))
+
+# 11 조회 결과 내려받기 · utf-8-sig 로 저장해야 엑셀에서 한글이 안 깨짐
+st.download_button(
+    "CSV로 내려받기",
+    data=table.to_csv(index=False).encode("utf-8-sig"),
+    file_name=f"신규등록_{q_start}_{q_end}.csv",
+    mime="text/csv",
+)
