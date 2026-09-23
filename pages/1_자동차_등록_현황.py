@@ -1,3 +1,17 @@
+"""
+자동차 신규등록 현황 (2페이지)
+화면: 신지호 · 데이터: 강유나
+근거: 화면 기획서 v0.4 「2. 자동차 신규등록 현황」 요소 1~10, 동작, 호출 함수
+
+규칙
+- 이 파일은 db/registration.py 조회 함수 호출만 함. SQL 작성 금지
+- 연월은 함수에 '202608' 형식으로 넘기고, 화면엔 '2026.08'로 표시
+- 시도 · 성별 · 연령대 "전체" → None으로 바꿔서 함수에 전달
+- DB 오류 → 고정 안내 문구만 표시, 원래 오류 메시지 노출 금지
+- 조회 버튼: 기획서는 st.form이지만, form 안에서는 연도를 바꿔도 월 목록이
+  갱신되지 않아 st.button + session_state로 구현 (누를 때만 조회하는 동작은 동일)
+- 다른 페이지에 다녀오면 선택 조건 · 조회 결과를 처음 상태로 초기화
+"""
 import pandas as pd
 import streamlit as st
 
@@ -62,6 +76,15 @@ months_by_year: dict[str, list[str]] = {}
 for ym in yms:
     months_by_year.setdefault(ym[:4], []).append(ym[4:])
 
+# ──────────────────────────────────────────────
+# 다른 페이지에서 들어왔으면 선택 조건 · 조회 결과 초기화
+# (이 페이지의 상태는 모두 "newreg_"로 시작하는 이름으로 저장)
+# ──────────────────────────────────────────────
+if st.session_state.get("current_page") != "newreg":
+    for k in [k for k in st.session_state if str(k).startswith("newreg_")]:
+        del st.session_state[k]
+st.session_state["current_page"] = "newreg"  # 지금 보고 있는 페이지 기록
+
 # 기본값: 끝 = 가장 최근 연월, 시작 = 끝의 11개월 전 (최근 12개월, 데이터 범위 안에서)
 default_end = yms[-1]
 default_start = yms[max(0, len(yms) - 12)]
@@ -78,7 +101,7 @@ def ym_selector(label: str, default_ym: str, key: str) -> str:
             f"{label} 연도", years,
             index=years.index(default_ym[:4]),
             format_func=lambda y: f"{y}년",
-            key=f"{key}_year",
+            key=f"newreg_{key}_year",
         )
     months = months_by_year[year]
     with c2:
@@ -87,7 +110,7 @@ def ym_selector(label: str, default_ym: str, key: str) -> str:
             f"{label} 월", months,
             index=months.index(default_month),
             format_func=lambda m: f"{int(m)}월",
-            key=f"{key}_month_{year}",  # 연도별 별도 위젯 → 연도 바꾸면 월 목록 새로 생성
+            key=f"newreg_{key}_month_{year}",  # 연도별 별도 위젯 → 연도 바꾸면 월 목록 새로 생성
         )
     return year + month
 
@@ -98,9 +121,9 @@ with st.sidebar:
     start_ym = ym_selector("시작", default_start, "start")                  # 1
     st.caption("끝 연월")
     end_ym = ym_selector("끝", default_end, "end")                          # 2
-    region = st.selectbox("시도", [ALL] + region_list, index=0)             # 3
-    gender = st.selectbox("성별", [ALL] + gender_list, index=0)             # 4
-    age_group = st.selectbox("연령대", [ALL] + age_list, index=0)           # 5
+    region = st.selectbox("시도", [ALL] + region_list, index=0, key="newreg_region")        # 3
+    gender = st.selectbox("성별", [ALL] + gender_list, index=0, key="newreg_gender")        # 4
+    age_group = st.selectbox("연령대", [ALL] + age_list, index=0, key="newreg_age")        # 5
     clicked = st.button("조회", type="primary")                             # 6
 
 # ──────────────────────────────────────────────
