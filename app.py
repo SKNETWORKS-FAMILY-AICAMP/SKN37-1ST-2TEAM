@@ -10,6 +10,8 @@ FAQ_PAGE = "pages/2_기업_FAQ_조회.py"
 
 
 def home():
+    st.session_state["current_page"] = "home"  # 지금 보고 있는 페이지 기록 (다른 페이지의 초기화 판단용)
+
     # 2 서비스 제목 (미정: 서비스 이름 → 제안값대로 프로젝트 이름 그대로)
     st.title("전국 자동차 신규등록 현황 및 기업 FAQ 조회")
 
@@ -50,3 +52,4 @@ nav = st.navigation([
     st.Page(FAQ_PAGE, title="기업 FAQ 조회"),
 ])
 nav.run()
+
