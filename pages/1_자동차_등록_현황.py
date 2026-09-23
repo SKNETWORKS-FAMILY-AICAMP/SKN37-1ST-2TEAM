@@ -62,6 +62,15 @@ months_by_year: dict[str, list[str]] = {}
 for ym in yms:
     months_by_year.setdefault(ym[:4], []).append(ym[4:])
 
+# ──────────────────────────────────────────────
+# 다른 페이지에서 들어왔으면 선택 조건 · 조회 결과 초기화
+# (이 페이지의 상태는 모두 "newreg_"로 시작하는 이름으로 저장)
+# ──────────────────────────────────────────────
+if st.session_state.get("current_page") != "newreg":
+    for k in [k for k in st.session_state if str(k).startswith("newreg_")]:
+        del st.session_state[k]
+st.session_state["current_page"] = "newreg"  # 지금 보고 있는 페이지 기록
+
 # 기본값: 끝 = 가장 최근 연월, 시작 = 끝의 11개월 전 (최근 12개월, 데이터 범위 안에서)
 default_end = yms[-1]
 default_start = yms[max(0, len(yms) - 12)]
@@ -78,7 +87,7 @@ def ym_selector(label: str, default_ym: str, key: str) -> str:
             f"{label} 연도", years,
             index=years.index(default_ym[:4]),
             format_func=lambda y: f"{y}년",
-            key=f"{key}_year",
+            key=f"newreg_{key}_year",
         )
     months = months_by_year[year]
     with c2:
@@ -87,7 +96,7 @@ def ym_selector(label: str, default_ym: str, key: str) -> str:
             f"{label} 월", months,
             index=months.index(default_month),
             format_func=lambda m: f"{int(m)}월",
-            key=f"{key}_month_{year}",  # 연도별 별도 위젯 → 연도 바꾸면 월 목록 새로 생성
+            key=f"newreg_{key}_month_{year}",  # 연도별 별도 위젯 → 연도 바꾸면 월 목록 새로 생성
         )
     return year + month
 
@@ -98,9 +107,9 @@ with st.sidebar:
     start_ym = ym_selector("시작", default_start, "start")                  # 1
     st.caption("끝 연월")
     end_ym = ym_selector("끝", default_end, "end")                          # 2
-    region = st.selectbox("시도", [ALL] + region_list, index=0)             # 3
-    gender = st.selectbox("성별", [ALL] + gender_list, index=0)             # 4
-    age_group = st.selectbox("연령대", [ALL] + age_list, index=0)           # 5
+    region = st.selectbox("시도", [ALL] + region_list, index=0, key="newreg_region")        # 3
+    gender = st.selectbox("성별", [ALL] + gender_list, index=0, key="newreg_gender")        # 4
+    age_group = st.selectbox("연령대", [ALL] + age_list, index=0, key="newreg_age")        # 5
     clicked = st.button("조회", type="primary")                             # 6
 
 # ──────────────────────────────────────────────

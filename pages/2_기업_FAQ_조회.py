@@ -5,6 +5,8 @@ import streamlit as st
 
 from db.faq import get_categories, get_companies, search_faq
 
+st.session_state["current_page"] = "faq"  # 지금 보고 있는 페이지 기록 (다른 페이지의 초기화 판단용)
+
 ALL = "전체"
 PAGE_SIZE = 20
 DB_ERROR_MSG = "데이터를 불러오지 못했어요. 잠시 후 다시 시도해주세요."

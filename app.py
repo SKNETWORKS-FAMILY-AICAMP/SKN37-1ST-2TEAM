@@ -11,6 +11,8 @@ FAQ_PAGE = "pages/2_기업_FAQ_조회.py"
 
 
 def home():
+    st.session_state["current_page"] = "home" 
+    
     # 공통 스타일 주입 / 페이지 맨 위에서 1회 호출
     inject_style()
  
@@ -51,3 +53,4 @@ nav = st.navigation([
     st.Page(FAQ_PAGE, title="기업 FAQ 조회"),
 ])
 nav.run()
+
