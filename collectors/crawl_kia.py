@@ -16,6 +16,7 @@ from selenium.common.exceptions import (
 FAQ_URL = "https://www.kia.com/kr/customer-service/center/faq"
 
 
+
 CATEGORY_MAP = {
     "차량 구매": "차량구매",
     "차량 정비": "차량정비",
@@ -25,20 +26,23 @@ CATEGORY_MAP = {
 }
 
 
+
 def create_driver():
 
     options = Options()
+
+    # 테스트할 때는 브라우저가 보이는 것이 편함
+    # 정상 작동 확인 후 아래 주석 제거 가능
+    # options.add_argument("--headless=new")
 
     options.add_argument("--disable-gpu")
     options.add_argument("--window-size=1920,1080")
     options.add_argument("--disable-notifications")
     options.add_argument("--disable-popup-blocking")
 
-    driver = webdriver.Chrome(
+    return webdriver.Chrome(
         options=options
     )
-
-    return driver
 
 
 def find_category_button(
@@ -68,12 +72,14 @@ def find_category_button(
                 driver,
                 3
             ).until(
+
                 EC.element_to_be_clickable(
                     (
                         By.XPATH,
                         xpath
                     )
                 )
+
             )
 
             return element
@@ -85,6 +91,93 @@ def find_category_button(
 
 
     return None
+
+
+
+def click_more_until_end(driver):
+
+    click_count = 0
+
+
+    while True:
+
+        try:
+
+            more_buttons = driver.find_elements(
+                By.XPATH,
+                """
+                //button[
+                    contains(normalize-space(.), '더보기')
+                    or contains(normalize-space(.), 'MORE')
+                    or contains(normalize-space(.), 'More')
+                ]
+                """
+            )
+
+
+            visible_buttons = []
+
+            for button in more_buttons:
+
+                try:
+
+                    if (
+                        button.is_displayed()
+                        and button.is_enabled()
+                    ):
+
+                        visible_buttons.append(
+                            button
+                        )
+
+                except Exception:
+
+                    continue
+
+
+            if not visible_buttons:
+
+                break
+
+
+            button = visible_buttons[0]
+
+
+            driver.execute_script(
+                "arguments[0].scrollIntoView({block:'center'});",
+                button
+            )
+
+            time.sleep(0.3)
+
+
+            driver.execute_script(
+                "arguments[0].click();",
+                button
+            )
+
+
+            click_count += 1
+
+
+            print(
+                f"  더보기 클릭: {click_count}회"
+            )
+
+
+            time.sleep(1)
+
+
+            # 무한 반복 방지
+            if click_count >= 30:
+
+                break
+
+
+        except Exception:
+
+            break
+
 
 
 def get_question_items(driver):
@@ -107,13 +200,12 @@ def get_question_items(driver):
     ]
 
 
-    category_names = [
-        "차량 구매",
-        "차량 정비",
-        "홈페이지",
-        "기아멤버스",
-        "Pleos 계정"
-    ]
+    category_names = list(
+        CATEGORY_MAP.keys()
+    )
+
+
+    question_items = []
 
 
     for selector in selectors:
@@ -122,8 +214,6 @@ def get_question_items(driver):
             By.CSS_SELECTOR,
             selector
         )
-
-        question_items = []
 
 
         for element in elements:
@@ -141,22 +231,34 @@ def get_question_items(driver):
                     continue
 
 
+                # 카테고리 버튼 제외
                 if text in category_names:
                     continue
 
 
+                # 너무 긴 텍스트 제외
                 if len(text) > 500:
                     continue
 
 
+                # 질문 형태 판별
                 question_like = (
+
                     "?" in text
+
                     or "나요" in text
+
                     or "까요" in text
+
                     or "무엇" in text
+
                     or "어떻게" in text
+
                     or "인가요" in text
+
                     or "되나요" in text
+
+                    or "있나요" in text
                 )
 
 
@@ -167,22 +269,41 @@ def get_question_items(driver):
                     )
 
 
-            except StaleElementReferenceException:
-
-                continue
-
-
             except Exception:
 
                 continue
 
 
-        if len(question_items) > 0:
 
-            return question_items
+    unique_items = []
+
+    seen_text = set()
 
 
-    return []
+    for item in question_items:
+
+        try:
+
+            text = item.text.strip()
+
+        except Exception:
+
+            continue
+
+
+        if text in seen_text:
+            continue
+
+
+        seen_text.add(text)
+
+        unique_items.append(
+            item
+        )
+
+
+    return unique_items
+
 
 def get_question_text(item):
 
@@ -217,13 +338,13 @@ def click_question(
 
         time.sleep(0.5)
 
-
         return True
 
 
     except Exception:
 
         return False
+
 
 
 def get_answer_text(
@@ -238,6 +359,8 @@ def get_answer_text(
         "./ancestor::*[contains(@class,'accordion')][1]",
 
         "./ancestor::*[contains(@class,'faq')][1]",
+
+        "./ancestor::*[contains(@class,'item')][1]",
 
         "./parent::*"
     ]
@@ -267,7 +390,13 @@ def get_answer_text(
             ).strip()
 
 
-            if answer.startswith("A"):
+            # A 또는 A. 제거
+            if answer.startswith("A."):
+
+                answer = answer[2:].strip()
+
+            elif answer.startswith("A"):
+
                 answer = answer[1:].strip()
 
 
@@ -284,6 +413,290 @@ def get_answer_text(
     return ""
 
 
+def collect_current_page(
+    driver,
+    db_category,
+    faq_list
+):
+
+    items = get_question_items(
+        driver
+    )
+
+
+    print(f"  현재 페이지 FAQ 후보: {len(items)}건")
+
+
+    for index in range(
+        len(items)
+    ):
+
+        try:
+
+            # DOM 변경 대비
+            items = get_question_items(
+                driver
+            )
+
+
+            if index >= len(items):
+
+                continue
+
+
+            item = items[index]
+
+
+            question = get_question_text(
+                item
+            )
+
+
+            if not question:
+
+                continue
+
+
+            # 이미 수집된 질문이면 생략
+            already_exists = any(
+
+                faq["category"] == db_category
+                and faq["question"] == question
+
+                for faq in faq_list
+            )
+
+
+            if already_exists:
+
+                continue
+
+
+            # 질문 클릭
+            click_question(
+                driver,
+                item
+            )
+
+
+            # DOM 재조회
+            items = get_question_items(
+                driver
+            )
+
+
+            if index >= len(items):
+
+                continue
+
+
+            item = items[index]
+
+
+            answer = get_answer_text(
+                item,
+                question
+            )
+
+
+            if not answer:
+
+                print(
+                    f"    답변 없음: {question}"
+                )
+
+                continue
+
+
+            faq_list.append(
+                {
+                    "company": "기아",
+                    "category": db_category,
+                    "question": question,
+                    "answer": answer,
+                    "source_url": FAQ_URL
+                }
+            )
+
+
+            print(
+                f"    [{db_category}] {question}"
+            )
+
+
+        except StaleElementReferenceException:
+
+            print(
+                f"    FAQ {index + 1}: 요소 변경"
+            )
+
+
+        except Exception as e:
+
+            print(
+                f"    FAQ {index + 1} 수집 실패: {e}"
+            )
+
+
+def go_to_next_page(
+    driver,
+    current_page
+):
+
+    next_page = current_page + 1
+
+
+    xpath_list = [
+
+        f"//button[normalize-space()='{next_page}']",
+
+        f"//a[normalize-space()='{next_page}']",
+
+        f"//*[@role='button' and normalize-space()='{next_page}']"
+    ]
+
+
+    for xpath in xpath_list:
+
+        try:
+
+            buttons = driver.find_elements(
+                By.XPATH,
+                xpath
+            )
+
+
+            for button in buttons:
+
+                try:
+
+                    if not button.is_displayed():
+                        continue
+
+
+                    driver.execute_script(
+                        "arguments[0].scrollIntoView({block:'center'});",
+                        button
+                    )
+
+                    time.sleep(0.2)
+
+
+                    driver.execute_script(
+                        "arguments[0].click();",
+                        button
+                    )
+
+
+                    time.sleep(1)
+
+
+                    return True
+
+
+                except Exception:
+
+                    continue
+
+
+        except Exception:
+
+            continue
+
+
+    return False
+
+
+def collect_category(
+    driver,
+    site_category,
+    db_category,
+    faq_list
+):
+
+    print()
+    print("=" * 70)
+    print(
+        f"[{site_category}] FAQ 수집 시작"
+    )
+    print("=" * 70)
+
+
+    # 카테고리 클릭
+    category_button = find_category_button(
+        driver,
+        site_category
+    )
+
+
+    if category_button is None:
+
+        print(
+            f"카테고리를 찾지 못했습니다: {site_category}"
+        )
+
+        return
+
+
+    driver.execute_script(
+        "arguments[0].scrollIntoView({block:'center'});",
+        category_button
+    )
+
+    time.sleep(0.3)
+
+
+    driver.execute_script(
+        "arguments[0].click();",
+        category_button
+    )
+
+
+    time.sleep(2)
+
+
+    click_more_until_end(
+        driver
+    )
+
+
+    page = 1
+
+
+    while True:
+
+        print(
+            f"  {page}페이지 수집 중..."
+        )
+
+
+        collect_current_page(
+            driver,
+            db_category,
+            faq_list
+        )
+
+
+        moved = go_to_next_page(
+            driver,
+            page
+        )
+
+
+        if not moved:
+
+            break
+
+
+        page += 1
+
+
+        # 무한 반복 방지
+        if page > 30:
+
+            break
+
+
 def crawl_kia_faq():
 
     driver = create_driver()
@@ -298,171 +711,31 @@ def crawl_kia_faq():
         )
 
 
+        print(
+            "기아 FAQ 페이지 접속 중..."
+        )
+
+
         time.sleep(5)
 
 
         for site_category, db_category in CATEGORY_MAP.items():
 
-            print()
-            print(
-                f"[{site_category}] FAQ 수집 시작..."
-            )
-
-
-            category_button = find_category_button(
-                driver,
-                site_category
-            )
-
-
-            if category_button is None:
-
-                print(
-                    f"카테고리를 찾지 못했습니다: {site_category}"
-                )
-
-                continue
-
-
             try:
 
-                driver.execute_script(
-                    "arguments[0].scrollIntoView({block:'center'});",
-                    category_button
+                collect_category(
+                    driver,
+                    site_category,
+                    db_category,
+                    faq_list
                 )
-
-                time.sleep(0.3)
-
-
-                driver.execute_script(
-                    "arguments[0].click();",
-                    category_button
-                )
-
-                time.sleep(2)
 
 
             except Exception as e:
 
                 print(
-                    f"카테고리 클릭 실패: {e}"
+                    f"[{site_category}] 카테고리 수집 오류: {e}"
                 )
-
-                continue
-
-
-
-            items = get_question_items(
-                driver
-            )
-
-
-            print(
-                f"FAQ 목록: {len(items)}건"
-            )
-
-
-            for index in range(
-                len(items)
-            ):
-
-                try:
-
-                    items = get_question_items(
-                        driver
-                    )
-
-
-                    if index >= len(items):
-
-                        continue
-
-
-                    item = items[index]
-
-
-
-                    question = get_question_text(
-                        item
-                    )
-
-
-                    if not question:
-                        continue
-
-
-                    click_question(
-                        driver,
-                        item
-                    )
-
-
-                    items = get_question_items(
-                        driver
-                    )
-
-
-                    if index >= len(items):
-
-                        continue
-
-
-                    item = items[index]
-
-
-
-                    answer = get_answer_text(
-                        item,
-                        question
-                    )
-
-
-                    if not answer:
-
-                        print(
-                            f"  답변 없음: {question}"
-                        )
-
-                        continue
-
-
-
-                    faq_list.append(
-                        {
-                            "company": "기아",
-
-                            "category": db_category,
-
-                            "question": question,
-
-                            "answer": answer,
-
-                            "source_url": FAQ_URL
-                        }
-                    )
-
-
-                    print(
-                        f"  [{db_category}] {question}"
-                    )
-
-
-                except StaleElementReferenceException:
-
-                    print(
-                        f"  FAQ {index + 1}: 요소 변경됨"
-                    )
-
-                    continue
-
-
-                except Exception as e:
-
-                    print(
-                        f"  FAQ {index + 1} 수집 실패: {e}"
-                    )
-
-                    continue
 
 
         unique_faq = []
@@ -479,6 +752,7 @@ def crawl_kia_faq():
 
 
             if key in seen:
+
                 continue
 
 
@@ -500,7 +774,6 @@ def crawl_kia_faq():
         driver.quit()
 
 
-
 if __name__ == "__main__":
 
     data = crawl_kia_faq()
@@ -511,42 +784,28 @@ if __name__ == "__main__":
     print("기아 FAQ 크롤링 완료")
     print("=" * 80)
 
-    print(
-        f"총 수집 FAQ: {len(data)}건"
-    )
+    print(f"총 수집 FAQ: {len(data)}건")
 
+
+    # ========================================================
+    # 수집 데이터 출력
+    # ========================================================
 
     for item in data:
 
         print()
-        print(
-            "회사:",
-            item["company"]
-        )
+        print("회사:",item["company"])
 
-        print(
-            "카테고리:",
-            item["category"]
-        )
+        print("카테고리:",item["category"])
 
-        print(
-            "질문:",
-            item["question"]
-        )
+        print("질문:",item["question"])
 
-        print(
-            "답변:",
-            item["answer"]
-        )
+        print("답변:",item["answer"])
 
-        print(
-            "URL:",
-            item["source_url"]
-        )
+        print("URL:",item["source_url"])
 
-        print(
-            "-" * 80
-        )
+        print("-" * 80)
+
 
     print()
     print("=" * 80)
@@ -554,13 +813,7 @@ if __name__ == "__main__":
     print("=" * 80)
 
 
-    categories = [
-        "차량구매",
-        "차량정비",
-        "홈페이지",
-        "멤버스",
-        "Pleos 계정"
-    ]
+    categories = ["차량구매","차량정비","홈페이지","멤버스","Pleos 계정"]
 
 
     for category in categories:
@@ -572,9 +825,4 @@ if __name__ == "__main__":
         )
 
 
-        print(
-            category,
-            ":",
-            count,
-            "개"
-        )
+        print(category, ":",count,"개")
