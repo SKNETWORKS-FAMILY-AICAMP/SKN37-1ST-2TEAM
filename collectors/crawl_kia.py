@@ -1,3 +1,4 @@
+# collectors/crawl_kia.py
 
 import time
 
@@ -53,14 +54,7 @@ def find_category_button(driver, category_name):
 
         try:
 
-            return WebDriverWait(
-                driver,
-                3
-            ).until(
-                EC.element_to_be_clickable(
-                    (By.XPATH, xpath)
-                )
-            )
+            return WebDriverWait(driver,3).until(EC.element_to_be_clickable((By.XPATH, xpath)))
 
         except TimeoutException:
             continue
@@ -242,22 +236,14 @@ def collect_current_page(
 
     items = get_question_items(driver)
 
-    print(
-        f"  현재 페이지 FAQ 후보: {len(items)}건"
-    )
+    print(f"  현재 페이지 FAQ 후보: {len(items)}건")
 
     for index in range(len(items)):
 
         # 최대 수집량 도달
-        if category_count(
-            faq_list,
-            db_category
-        ) >= MAX_PER_CATEGORY:
+        if category_count(faq_list,db_category) >= MAX_PER_CATEGORY:
 
-            print(
-                f"  [{db_category}] "
-                f"최대 {MAX_PER_CATEGORY}건 수집 완료"
-            )
+            print(f"  [{db_category}] "f"최대 {MAX_PER_CATEGORY}건 수집 완료")
 
             return True
 
@@ -311,9 +297,7 @@ def collect_current_page(
 
             if not answer:
 
-                print(
-                    f"    답변 없음: {question}"
-                )
+                print(f"    답변 없음: {question}")
 
                 continue
 
@@ -329,10 +313,7 @@ def collect_current_page(
             )
 
 
-            current_count = category_count(
-                faq_list,
-                db_category
-            )
+            current_count = category_count(faq_list,db_category)
 
 
             print(
@@ -349,13 +330,9 @@ def collect_current_page(
 
         except Exception as e:
 
-            print(
-                f"    FAQ {index + 1} 수집 실패: {e}"
-            )
-
+            print(f"    FAQ {index + 1} 수집 실패: {e}")
 
     return False
-
 
 def go_to_next_page(
     driver,
@@ -414,9 +391,7 @@ def collect_category(
 
     print()
     print("=" * 70)
-    print(
-        f"[{site_category}] FAQ 수집 시작"
-    )
+    print(f"[{site_category}] FAQ 수집 시작")
     print("=" * 70)
 
 
@@ -427,9 +402,7 @@ def collect_category(
 
     if category_button is None:
 
-        print(
-            f"카테고리를 찾지 못했습니다: {site_category}"
-        )
+        print(f"카테고리를 찾지 못했습니다: {site_category}")
 
         return
 
@@ -441,10 +414,7 @@ def collect_category(
 
     time.sleep(0.3)
 
-    driver.execute_script(
-        "arguments[0].click();",
-        category_button
-    )
+    driver.execute_script("arguments[0].click();",category_button)
 
     time.sleep(2)
 
@@ -454,16 +424,10 @@ def collect_category(
 
     while True:
 
-        print(
-            f"  {page}페이지 수집 중..."
-        )
+        print(f"  {page}페이지 수집 중...")
 
 
-        limit_reached = collect_current_page(
-            driver,
-            db_category,
-            faq_list
-        )
+        limit_reached = collect_current_page(driver,db_category,faq_list)
 
 
         # 15건 다 모으면 다음 페이지 안 감
@@ -472,10 +436,7 @@ def collect_category(
 
 
         # 현재까지 이미 15건이면 종료
-        if category_count(
-            faq_list,
-            db_category
-        ) >= MAX_PER_CATEGORY:
+        if category_count(faq_list,db_category) >= MAX_PER_CATEGORY:
 
             break
 
@@ -515,9 +476,7 @@ def crawl_kia_faq():
 
         driver.get(FAQ_URL)
 
-        print(
-            "기아 FAQ 페이지 접속 중..."
-        )
+        print("기아 FAQ 페이지 접속 중...")
 
         time.sleep(5)
 
