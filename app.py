@@ -1,4 +1,5 @@
 import streamlit as st
+from styles import card_image, hero, inject_style
 
 st.set_page_config(
     page_title="전국 자동차 신규등록 현황 및 기업 FAQ 조회",
@@ -10,35 +11,35 @@ FAQ_PAGE = "pages/2_기업_FAQ_조회.py"
 
 
 def home():
-    st.session_state["current_page"] = "home"  # 지금 보고 있는 페이지 기록 (다른 페이지의 초기화 판단용)
-
-    # 2 서비스 제목 (미정: 서비스 이름 → 제안값대로 프로젝트 이름 그대로)
-    st.title("전국 자동차 신규등록 현황 및 기업 FAQ 조회")
-
-    # 3 설명글
-    st.write(
-        "누가(성별·연령대) 어디서(시도) 새 차를 등록했는지와 "
-        "자동차 기업 FAQ를 한 곳에서 조회하는 서비스예요."
+    st.session_state["current_page"] = "home" 
+    
+    # 공통 스타일 주입 / 페이지 맨 위에서 1회 호출
+    inject_style()
+ 
+    # 상단 배너 출력 / 이미지 위에 제목과 설명 표시
+    hero(
+        "전국 자동차 신규등록 현황 및 기업 FAQ 조회",
+        "누가, 언제, 어디서 새 차를 등록했을까요?",
     )
-
-    st.divider()
-
-    # 4, 5 바로가기 카드 (좌: 신규등록 현황 / 우: FAQ)
-    left, right = st.columns(2)
-
+ 
+    # 기능 카드 2개 배치 / 좌: 신규등록 현황, 우: 기업 FAQ
+    left, right = st.columns(2, gap="medium")
+ 
     with left:
         with st.container(border=True):
+            card_image("assets/card_registration.png")
             st.subheader("자동차 신규등록 현황")
             st.write("연월, 시도, 성별, 연령대별 신규등록 대수 조회")
-            st.page_link(REG_PAGE, label="바로가기")
-
+            st.page_link(REG_PAGE, label="조회하기 →")
+ 
     with right:
         with st.container(border=True):
+            card_image("assets/card_faq.png")
             st.subheader("기업 FAQ 조회")
             st.write("기아, 현대 FAQ 검색")
-            st.page_link(FAQ_PAGE, label="바로가기")
-
-    # 6 데이터 출처 (미정: 표시 여부 → 제안값대로 맨 아래 1줄 표시)
+            st.page_link(FAQ_PAGE, label="조회하기 →")
+ 
+    # 데이터 출처 표시 / 화면 맨 아래 1줄
     st.caption(
         "데이터 출처: 공공데이터포털 (한국교통안전공단 자동차 신규등록정보) · "
         "기아, 현대 고객센터 FAQ"
