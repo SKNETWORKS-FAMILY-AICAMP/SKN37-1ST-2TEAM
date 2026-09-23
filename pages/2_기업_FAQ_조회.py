@@ -1,11 +1,17 @@
-import html
+"""
+기업 FAQ 조회 (3페이지)
+화면: 신지호 · 데이터: 박세윤(기아), 오원아(현대)
+근거: 화면 기획서 v0.4 「3. 기업 FAQ 조회」 요소 1~7, 동작, 호출 함수
 
-import pandas as pd
+규칙
+- 이 파일은 조회 함수 호출만 함. SQL 작성 금지
+- 카테고리 "전체" → None, 빈 키워드 → None 으로 함수에 전달
+- 기업 바꾸면 카테고리 "전체"로 초기화, 키워드는 유지
+- 결과는 20개씩, "더 보기" 버튼 (미정 → 제안값 적용)
+"""
 import streamlit as st
 
 from db.faq import get_categories, get_companies, search_faq
-
-st.session_state["current_page"] = "faq"  # 지금 보고 있는 페이지 기록 (다른 페이지의 초기화 판단용)
 
 ALL = "전체"
 PAGE_SIZE = 20
@@ -60,11 +66,6 @@ div[data-testid="stExpander"] {
 div[data-testid="stExpander"] summary, div[data-testid="stExpander"] summary * {
     color: #16232E;
 }
-/* 답변 영역 */
-.faq-answer {
-    line-height: 1.7;
-    margin-bottom: 0.6rem;
-}
 /* 검색창: 둥글게 + 흰 배경 + 진한 글자 */
 div[data-testid="stTextInput"] input {
     border-radius: 10px;
@@ -87,7 +88,7 @@ def to_param(value: str) -> str | None:
     return None if value == ALL else value
 
 
-# 선택 목록은 캐싱 (한 번 불러온 목록은 1시간 동안 재사용)
+# 선택 목록은 캐싱 (화면 기획서 「공통 · 캐싱」)
 @st.cache_data(ttl=3600)
 def load_companies() -> list[str]:
     return get_companies()
@@ -168,11 +169,9 @@ limit = st.session_state.faq_limit
 for row in df.head(limit).itertuples(index=False):
     with st.expander(f"**Q. {row.question}** · {category_badge(row.category_name)}", expanded=False):
         # 7 답변 영역: 답변 전문 + 원본 보기 링크 + 수집일
-        # 답변은 원문 글자 그대로 + 줄바꿈 유지 (마크다운으로 해석하지 않음 · 기획 "줄바꿈 유지")
-        answer_html = html.escape(str(row.answer)).replace("\n", "<br>")
-        st.markdown(f'<div class="faq-answer">{answer_html}</div>', unsafe_allow_html=True)
+        st.markdown(row.answer)
         collected = str(row.collected_at)[:10].replace("-", ".")  # 2026-09-21 → 2026.09.21
-        if pd.notna(row.source_url) and row.source_url:  # 원본 주소 없으면(None, NaN, 빈 값) 링크 숨김
+        if row.source_url:  # 원본 주소 없으면 링크 숨김
             st.caption(f"[원본 보기 ↗]({row.source_url}) · 수집일 {collected}")
         else:
             st.caption(f"수집일 {collected}")
