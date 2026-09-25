@@ -64,3 +64,4 @@ nav = st.navigation([
 st.logo("assets/logo.png", size="large")
 nav.run()
 sidebar_footer() 
+
