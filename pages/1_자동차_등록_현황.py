@@ -180,7 +180,6 @@ def ym_selector(label: str, default_ym: str, key: str,
 inject_style()      # 공통 스타일 주입 · 배너 · 카드 · 사이드바 모양
 page_banner(        # 7 상단 배너
     "자동차 신규등록 현황",
-    "연월 · 시도 · 성별 · 연령대별로 새 차 등록 현황을 조회합니다.",
     "assets/banner_registration.png",
 )
 
@@ -259,7 +258,6 @@ def show_table_tab():
             f"{'전체 연령대' if q_age == ALL else q_age} · "
             f"{len(df):,}건"
         )
-        st.caption("신규등록 = 그 달에 새로 등록된 차 기준 · 개인 명의만 집계 (법인 제외)")
 
         if df.empty:
             st.info("선택한 조건에 맞는 데이터가 없어요.")
@@ -485,7 +483,6 @@ def show_chart_tab():
                         else f"{ym_to_label(c_start)} ~ {ym_to_label(c_end)}")
         region_label = "전국" if chart_region == ALL else chart_region
         st.caption(f"{period_label} · {region_label} · 성별 · 연령대 전체")
-        st.caption("신규등록 = 그 달에 새로 등록된 차 기준 · 개인 명의만 집계 (법인 제외)")
 
         if src.empty:
             st.info("선택한 조건에 맞는 데이터가 없어요.")
