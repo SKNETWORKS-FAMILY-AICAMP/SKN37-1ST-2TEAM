@@ -27,14 +27,14 @@ def home():
     left, right = st.columns(2, gap="medium")
  
     with left:
-        with st.container(border=True):
+        with st.container(border=True, key="homecard_reg"):
             card_image("assets/card_registration.png")
             st.subheader("자동차 신규등록 현황")
             st.write("연월, 시도, 성별, 연령대별 신규등록 대수 조회")
             st.page_link(REG_PAGE, label="조회하기 →")
  
     with right:
-        with st.container(border=True):
+        with st.container(border=True, key="homecard_faq"):
             card_image("assets/card_faq.png")
             st.subheader("기업 FAQ 조회")
             st.write("기아, 현대 FAQ 검색")
