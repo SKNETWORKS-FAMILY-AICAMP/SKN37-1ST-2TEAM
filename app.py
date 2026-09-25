@@ -1,9 +1,9 @@
 import streamlit as st
-from styles import card_image, hero, inject_style
-from styles import card_image, hero, inject_style, sidebar_footer
+from styles import card_image, hero, info_box, inject_style, sidebar_footer
 
 st.set_page_config(
     page_title="전국 자동차 신규등록 현황 및 기업 FAQ 조회",
+    page_icon="assets/logo.png",
     layout="wide",
 )
 
@@ -40,6 +40,13 @@ def home():
             st.write("기아, 현대 FAQ 검색")
             st.page_link(FAQ_PAGE, label="조회하기 →")
  
+    # 조회 가능한 항목 안내 / 카드 아래 배치
+    info_box("이런 정보를 조회할 수 있어요!", [
+        "2021년 9월부터 60개월간의 자동차 신규등록 데이터",
+        "17개 시도 · 성별 · 8개 연령대별 상세 조회와 차트",
+        "기아 · 현대 고객센터 FAQ 통합 검색",
+    ])
+
     # 데이터 출처 표시 / 화면 맨 아래 1줄
     st.caption(
         "데이터 출처: 공공데이터포털 (한국교통안전공단 자동차 신규등록정보) · "
@@ -57,3 +64,4 @@ nav = st.navigation([
 st.logo("assets/logo.png", size="large")
 nav.run()
 sidebar_footer() 
+
