@@ -367,3 +367,4 @@ def info_box(title: str, items: list[str]):
         """,
         unsafe_allow_html=True,
     )
+
