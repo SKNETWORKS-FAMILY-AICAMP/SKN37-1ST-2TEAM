@@ -48,11 +48,10 @@ def get_count(year, month, region_code, gender_code, age_code):
 
 
 # 수집할 연월 만들기 (2021.09 ~ 2026.08)
-START_YM = "202109"
-END_YM = "202608"
+START_YM, END_YM = "201609", "202608"     
 
 YMS = []
-for year in range(2021, 2027):
+for year in range(2016, 2027):            
     for month in range(1, 13):
         ym = f"{year}{month:02d}"
         if START_YM <= ym <= END_YM:
