@@ -242,3 +242,40 @@ def sidebar_footer(text: str = "자동차 현황 확인하기",
             except Exception:
                 pass                  # 이미지가 없어도 문구는 표시
             st.caption(text)
+
+
+def page_banner(title: str, subtitle: str, image_path: str):
+    """페이지 상단 배너 출력 / 홈 배너를 얇게 줄인 형태
+    - inject_style() 을 먼저 호출해야 모양이 적용됨
+    """
+    try:
+        background = f"url('{_to_data_uri(image_path)}') right bottom/cover no-repeat"
+    except FileNotFoundError:
+        background = f"linear-gradient(120deg, {BRAND_DEEP} 0%, {BRAND} 100%)"
+
+    st.markdown(
+        f"""
+        <div class="page-banner" style="background: {background};">
+            <div class="page-banner-inner">
+                <h2>{title}</h2>
+                <p>{subtitle}</p>
+            </div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+
+def info_box(title: str, items: list[str]):
+    """안내 박스 출력 / 체크 표시가 붙은 목록"""
+    lines = "".join(f"<li>{item}</li>" for item in items)
+    st.markdown(
+        f"""
+        <div class="info-box">
+            <h4>💡 {title}</h4>
+            <ul>{lines}</ul>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
