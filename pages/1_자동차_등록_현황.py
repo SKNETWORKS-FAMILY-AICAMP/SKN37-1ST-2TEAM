@@ -258,6 +258,7 @@ def show_table_tab():
             f"{'전체 연령대' if q_age == ALL else q_age} · "
             f"{len(df):,}건"
         )
+        st.caption("신규등록 = 그 달에 새로 등록된 차 기준 · 개인 명의만 집계 (법인 제외)")
 
         if df.empty:
             st.info("선택한 조건에 맞는 데이터가 없어요.")
@@ -483,6 +484,7 @@ def show_chart_tab():
                         else f"{ym_to_label(c_start)} ~ {ym_to_label(c_end)}")
         region_label = "전국" if chart_region == ALL else chart_region
         st.caption(f"{period_label} · {region_label} · 성별 · 연령대 전체")
+        st.caption("신규등록 = 그 달에 새로 등록된 차 기준 · 개인 명의만 집계 (법인 제외)")
 
         if src.empty:
             st.info("선택한 조건에 맞는 데이터가 없어요.")
