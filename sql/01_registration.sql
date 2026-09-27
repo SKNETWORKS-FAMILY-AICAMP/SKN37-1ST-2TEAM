@@ -57,15 +57,12 @@ CREATE TABLE IF NOT EXISTS new_registration_stat (
 -- 2) 연월 × 시도 × 성별 × 연령대 조합마다 반복 호출
 --    요청 변수: serviceKey, registYy(YYYY), registMt(MM, 두 자리), registGrcCode, sexdstn, agrde
 -- 3) 코드 값은 region, gender, age_group 테이블의 api_code에서 꺼내 사용
--- 4) 응답 형식은 XML. (요청에 _type=json 을 붙여 JSON이 오는지 먼저 확인해 보기)
+-- 4) 응답 형식은 XML만 지원 (_type=json 무효)
 -- 5) 다시 받으면 새 값으로 덮어씌움.
 --    INSERT INTO new_registration_stat (stat_ym, region_id, gender_id, age_id, reg_count)
 --    VALUES (%s, %s, %s, %s, %s)
 --    ON DUPLICATE KEY UPDATE reg_count = VALUES(reg_count);
--- 6) 개발 계정은 하루 3,000번까지 호출 가능, 12개월 = 3,264번이라 이틀에 나눠 받음
-
--- 시도 수집이 불가능하다고 결정되면 (예비안)
--- region 테이블과 region_id 컬럼을 빼고, UNIQUE (stat_ym, gender_id, age_id) 로 바꾸기
+-- 6) 일일 호출 한도 10,000번 · 120개월 = 32,640번이라 여러 날 나눠 받음
 
 -- 화면 필터가 SQL 조건이 되는 예시 (Streamlit에서는 값을 %s로 넘김)
 

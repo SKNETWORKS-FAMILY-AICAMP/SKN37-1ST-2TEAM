@@ -47,7 +47,7 @@ def get_count(year, month, region_code, gender_code, age_code):
 
 
 
-# 수집할 연월 만들기 (2021.09 ~ 2026.08)
+# 수집할 연월 만들기 (2016.09 ~ 2026.08)
 START_YM, END_YM = "201609", "202608"     
 
 YMS = []
@@ -64,7 +64,7 @@ if __name__ == "__main__":
     ages = fetch_df("SELECT age_id, api_code FROM age_group ORDER BY age_id")
 
     # 수집
-    MAX_CALLS = 9900          # 하루 3,000번 제한 · 여유 100번
+    MAX_CALLS = 9900          # 하루 10,000번 제한 · 여유 100번
     SLEEP_SEC = 0.2
     SAVE_EVERY = 500
     call_count = 0

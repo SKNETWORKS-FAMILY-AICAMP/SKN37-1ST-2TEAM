@@ -1,6 +1,6 @@
 import os                       # 환경변수 (.env 값)를 읽을 때 사용
 import pymysql                  # 파이썬에서 MySQL에 접속하는 라이브러리
-import pandas as pd             # 조회 겨로가를 표로 만들 때 사용
+import pandas as pd             # 조회 결과를 표로 만들 때 사용
 from dotenv import load_dotenv  # .env 파일 내용을 환경변수로 불러오는 함수
 
 # .env 파일 내용 읽어오기
@@ -27,7 +27,7 @@ def fetch_df(sql, params=None):
         cursor = connection.cursor()
         cursor.execute(sql, params)
 
-        # 결과 행 모두 가져오기99_migrate → 01_registration → 03_seed 순서로 실행
+        # 결과 행 모두 가져오기
         rows = cursor.fetchall()
 
         # 컬럼 이름만 모으기
