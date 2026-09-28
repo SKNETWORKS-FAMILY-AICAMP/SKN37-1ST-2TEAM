@@ -411,6 +411,18 @@ python -m streamlit run app.py
 flowchart LR
     A[Open API<br>+ Web Crawling] --> B[Python] --> C[(MySQL)] --> D[Streamlit] --> E[사용자]
 ```
+# 시연 영상
+
+
+https://github.com/user-attachments/assets/d9ec4c19-9949-4bf3-8fe3-30e867fd07e9
+
+
+https://github.com/user-attachments/assets/477cff5e-aa2d-4f7a-b739-e6dd15a997fa
+
+
+https://github.com/user-attachments/assets/61a42d99-12ea-4e5f-91a9-194f6655eed1
+
+
 
 ---
 
